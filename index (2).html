@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Background Remover Pro - Advanced Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .upload-label {
+            display: inline-block;
+            padding: 20px 40px;
+            background: #667eea;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+
+        .upload-label:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .image-section {
+            background: #f9fafb;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h3 {
+            color: #555;
+            font-size: 1.2rem;
+        }
+
+        .edit-btn {
+            padding: 8px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .edit-btn:hover {
+            background: #764ba2;
+            transform: translateY(-1px);
+        }
+
+        .edit-btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .canvas-container {
+            position: relative;
+            min-height: 400px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 500px;
+            display: none;
+            cursor: crosshair;
+        }
+
+        canvas.show {
+            display: block;
+        }
+
+        .placeholder {
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        /* Editor Modal */
+        .editor-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .editor-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .editor-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .editor-header h2 {
+            color: #333;
+        }
+
+        .close-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: #dc2626;
+        }
+
+        .editor-workspace {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 25px;
+            margin-bottom: 20px;
+        }
+
+        .editor-tools {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+        }
+
+        .tool-section {
+            margin-bottom: 25px;
+        }
+
+        .tool-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .tool-section h4 {
+            color: #555;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tool-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tool-btn:hover {
+            background: #f3f4f6;
+            border-color: #667eea;
+        }
+
+        .tool-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .tool-btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .slider-group {
+            margin-bottom: 12px;
+        }
+
+        .slider-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .slider-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .slider-group input[type="range"] {
+            width: 100%;
+        }
+
+        .slider-group input[type="number"] {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .ratio-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .ratio-option {
+            padding: 10px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .ratio-option:hover {
+            background: #f3f4f6;
+            border-color: #667eea;
+        }
+
+        .ratio-option.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .color-picker-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .color-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .color-input {
+            flex: 1;
+            height: 40px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .color-presets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .color-preset {
+            height: 35px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+
+        .color-preset:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+        }
+
+        .editor-canvas-area {
+            background: #f3f4f6;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+            position: relative;
+        }
+
+        #editorCanvas {
+            max-width: 100%;
+            max-height: 600px;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            cursor: crosshair;
+        }
+
+        .crop-overlay {
+            position: absolute;
+            border: 2px dashed #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            cursor: move;
+            display: none;
+        }
+
+        .crop-overlay.show {
+            display: block;
+        }
+
+        .crop-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #667eea;
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+
+        .crop-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
+        .crop-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
+        .crop-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+        .crop-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .action-btn.primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: #059669;
+        }
+
+        .action-btn.secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .action-btn.secondary:hover {
+            background: #4b5563;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        button, .download-btn {
+            padding: 15px 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s;
+        }
+
+        #removeBtn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        #removeBtn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        #removeBtn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .download-btn {
+            background: #10b981;
+            color: white;
+            text-decoration: none;
+            display: none;
+        }
+
+        .download-btn.show {
+            display: inline-block;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        #status {
+            text-align: center;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        #status.show {
+            display: block;
+        }
+
+        #status.error {
+            background: #fee;
+            color: #c00;
+        }
+
+        #status.success {
+            background: #efe;
+            color: #0a0;
+        }
+
+        #status.info {
+            background: #eef;
+            color: #00a;
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #667eea;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .timer.show {
+            display: block;
+        }
+
+        .progress {
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress.show {
+            display: block;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            animation: progress 2s infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 100%; }
+            100% { width: 0%; }
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .editor-workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .editor-tools {
+                order: 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            button, .download-btn {
+                display: block;
+                width: 100%;
+                margin: 10px 0;
+            }
+
+            .ratio-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Background Remover Pro - Advanced Editor</h1>
+        
+        <div class="upload-section">
+            <label for="upload" class="upload-label">
+                📁 Choose an Image
+            </label>
+            <input type="file" id="upload" accept="image/*" hidden>
+        </div>
+
+        <div class="main-content">
+            <!-- Original Image -->
+            <div class="image-section">
+                <div class="section-header">
+                    <h3>📷 Original Image</h3>
+                    <button class="edit-btn" id="editOriginalBtn" disabled>✏️ Edit</button>
+                </div>
+                <div class="canvas-container">
+                    <canvas id="originalCanvas"></canvas>
+                    <p class="placeholder" id="originalPlaceholder">No image selected</p>
+                </div>
+            </div>
+
+            <!-- Result Image -->
+            <div class="image-section">
+                <div class="section-header">
+                    <h3>✨ Background Removed</h3>
+                    <button class="edit-btn" id="editResultBtn" disabled>✏️ Edit</button>
+                </div>
+                <div class="canvas-container">
+                    <canvas id="resultCanvas"></canvas>
+                    <p class="placeholder" id="resultPlaceholder">Result will appear here</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="removeBtn" disabled>🔮 Remove Background</button>
+            <a id="downloadBtn" class="download-btn">📥 Download Image</a>
+        </div>
+
+        <div class="timer" id="timer">⏱️ Processing time: 0.0s</div>
+        <div id="status"></div>
+        <div class="progress" id="progress">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+
+    <!-- Editor Modal -->
+    <div class="editor-modal" id="editorModal">
+        <div class="editor-content">
+            <div class="editor-header">
+                <h2>🎨 Image Editor</h2>
+                <button class="close-btn" id="closeEditor">✕ Close</button>
+            </div>
+
+            <div class="editor-workspace">
+                <div class="editor-tools">
+                    <div class="tool-section">
+                        <h4>🛠️ Tools</h4>
+                        <button class="tool-btn active" data-tool="crop">
+                            <span>✂️</span> Crop & Resize
+                        </button>
+                        <button class="tool-btn" data-tool="erase">
+                            <span>🧹</span> Eraser
+                        </button>
+                        <button class="tool-btn" data-tool="background">
+                            <span>🎨</span> Background
+                        </button>
+                    </div>
+
+                    <!-- Crop Tool Options -->
+                    <div class="tool-section" id="cropOptions">
+                        <h4>📐 Aspect Ratio</h4>
+                        <div class="ratio-grid">
+                            <div class="ratio-option active" data-ratio="free">Free</div>
+                            <div class="ratio-option" data-ratio="1:1">1:1</div>
+                            <div class="ratio-option" data-ratio="4:3">4:3</div>
+                            <div class="ratio-option" data-ratio="3:4">3:4</div>
+                            <div class="ratio-option" data-ratio="16:9">16:9</div>
+                            <div class="ratio-option" data-ratio="9:16">9:16</div>
+                        </div>
+                        <div class="slider-group" style="margin-top: 15px;">
+                            <label>Width (px)</label>
+                            <input type="number" id="cropWidth" min="1" value="800">
+                        </div>
+                        <div class="slider-group">
+                            <label>Height (px)</label>
+                            <input type="number" id="cropHeight" min="1" value="600">
+                        </div>
+                    </div>
+
+                    <!-- Eraser Tool Options -->
+                    <div class="tool-section" id="eraseOptions" style="display: none;">
+                        <h4>🧹 Eraser Settings</h4>
+                        <div class="slider-group">
+                            <label>Brush Size: <span id="brushSizeLabel">20</span>px</label>
+                            <input type="range" id="brushSize" min="5" max="100" value="20">
+                        </div>
+                        <button class="tool-btn" id="undoErase">
+                            <span>↩️</span> Undo Last Stroke
+                        </button>
+                        <button class="tool-btn" id="clearErase">
+                            <span>🗑️</span> Clear All Erases
+                        </button>
+                    </div>
+
+                    <!-- Background Tool Options -->
+                    <div class="tool-section" id="backgroundOptions" style="display: none;">
+                        <h4>🎨 Background Color</h4>
+                        <div class="color-picker-group">
+                            <div class="color-input-wrapper">
+                                <input type="color" id="bgColorPicker" class="color-input" value="#ffffff">
+                            </div>
+                            <div class="color-presets">
+                                <div class="color-preset" style="background: #ffffff;" data-color="#ffffff"></div>
+                                <div class="color-preset" style="background: #000000;" data-color="#000000"></div>
+                                <div class="color-preset" style="background: #f3f4f6;" data-color="#f3f4f6"></div>
+                                <div class="color-preset" style="background: #3b82f6;" data-color="#3b82f6"></div>
+                                <div class="color-preset" style="background: #10b981;" data-color="#10b981"></div>
+                                <div class="color-preset" style="background: #f59e0b;" data-color="#f59e0b"></div>
+                                <div class="color-preset" style="background: #ef4444;" data-color="#ef4444"></div>
+                                <div class="color-preset" style="background: #8b5cf6;" data-color="#8b5cf6"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="editor-canvas-area">
+                    <canvas id="editorCanvas"></canvas>
+                    <div class="crop-overlay" id="cropOverlay">
+                        <div class="crop-handle nw"></div>
+                        <div class="crop-handle ne"></div>
+                        <div class="crop-handle sw"></div>
+                        <div class="crop-handle se"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn secondary" id="resetEditor">🔄 Reset</button>
+                <button class="action-btn primary" id="applyEditor">✓ Apply Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Image state
+        let originalImage = null;
+        let processedImage = null;
+        let currentEditingImage = null;
+        let currentEditingTarget = null;
+
+        // Canvas references
+        const originalCanvas = document.getElementById('originalCanvas');
+        const resultCanvas = document.getElementById('resultCanvas');
+        const editorCanvas = document.getElementById('editorCanvas');
+        const originalCtx = originalCanvas.getContext('2d');
+        const resultCtx = resultCanvas.getContext('2d');
+        const editorCtx = editorCanvas.getContext('2d');
+
+        // Editor state
+        let currentTool = 'crop';
+        let cropRatio = 'free';
+        let backgroundColor = '#ffffff';
+        let brushSize = 20;
+        let isDrawing = false;
+        let eraseHistory = [];
+        
+        // Crop state
+        let cropArea = { x: 0, y: 0, width: 0, height: 0 };
+        let isDragging = false;
+        let dragHandle = null;
+        let dragStart = { x: 0, y: 0 };
+
+        // Timer
+        let startTime = 0;
+        let timerInterval = null;
+
+        // Show status
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            const progress = document.getElementById('progress');
+            status.textContent = message;
+            status.className = 'show ' + type;
+            
+            if (type === 'info') {
+                progress.classList.add('show');
+            } else {
+                progress.classList.remove('show');
+            }
+        }
+
+        // Timer functions
+        function startTimer() {
+            startTime = performance.now();
+            const timerEl = document.getElementById('timer');
+            timerEl.classList.add('show');
+            
+            timerInterval = setInterval(() => {
+                const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+                timerEl.textContent = `⏱️ Processing time: ${elapsed}s`;
+            }, 100);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = `✅ Completed in ${elapsed}s`;
+        }
+
+        // Draw image on canvas
+        function drawImageOnCanvas(canvas, ctx, image, maxWidth = 800, maxHeight = 600) {
+            let width = image.width;
+            let height = image.height;
+            
+            // Scale to fit
+            if (width > maxWidth || height > maxHeight) {
+                const scale = Math.min(maxWidth / width, maxHeight / height);
+                width *= scale;
+                height *= scale;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.clearRect(0, 0, width, height);
+            ctx.drawImage(image, 0, 0, width, height);
+            canvas.classList.add('show');
+        }
+
+        // Initialize editor with image
+        function initEditor(image, target) {
+            currentEditingImage = image;
+            currentEditingTarget = target;
+            
+            drawImageOnCanvas(editorCanvas, editorCtx, image, 800, 600);
+            
+            // Initialize crop area
+            cropArea = {
+                x: 0,
+                y: 0,
+                width: editorCanvas.width,
+                height: editorCanvas.height
+            };
+            
+            document.getElementById('cropWidth').value = editorCanvas.width;
+            document.getElementById('cropHeight').value = editorCanvas.height;
+            
+            updateCropOverlay();
+            document.getElementById('editorModal').classList.add('show');
+        }
+
+        // Update crop overlay
+        function updateCropOverlay() {
+            const overlay = document.getElementById('cropOverlay');
+            const rect = editorCanvas.getBoundingClientRect();
+            const scaleX = editorCanvas.width / rect.width;
+            const scaleY = editorCanvas.height / rect.height;
+            
+            overlay.style.left = (cropArea.x / scaleX) + 'px';
+            overlay.style.top = (cropArea.y / scaleY) + 'px';
+            overlay.style.width = (cropArea.width / scaleX) + 'px';
+            overlay.style.height = (cropArea.height / scaleY) + 'px';
+            
+            if (currentTool === 'crop') {
+                overlay.classList.add('show');
+            } else {
+                overlay.classList.remove('show');
+            }
+        }
+
+        // Apply crop
+        function applyCrop() {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            tempCanvas.width = cropArea.width;
+            tempCanvas.height = cropArea.height;
+            
+            // Fill background
+            tempCtx.fillStyle = backgroundColor;
+            tempCtx.fillRect(0, 0, cropArea.width, cropArea.height);
+            
+            // Draw cropped area
+            tempCtx.drawImage(
+                editorCanvas,
+                cropArea.x, cropArea.y, cropArea.width, cropArea.height,
+                0, 0, cropArea.width, cropArea.height
+            );
+            
+            // Update editor canvas
+            editorCanvas.width = cropArea.width;
+            editorCanvas.height = cropArea.height;
+            editorCtx.drawImage(tempCanvas, 0, 0);
+            
+            // Reset crop area
+            cropArea = {
+                x: 0,
+                y: 0,
+                width: editorCanvas.width,
+                height: editorCanvas.height
+            };
+            
+            updateCropOverlay();
+        }
+
+        // Apply background color
+        function applyBackgroundColor() {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            tempCanvas.width = editorCanvas.width;
+            tempCanvas.height = editorCanvas.height;
+            
+            // Fill background
+            tempCtx.fillStyle = backgroundColor;
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            
+            // Draw image on top
+            tempCtx.drawImage(editorCanvas, 0, 0);
+            
+            // Update canvas
+            editorCtx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
+            editorCtx.drawImage(tempCanvas, 0, 0);
+        }
+
+        // Eraser functionality
+        function erase(x, y) {
+            editorCtx.save();
+            editorCtx.globalCompositeOperation = 'destination-out';
+            editorCtx.beginPath();
+            editorCtx.arc(x, y, brushSize, 0, Math.PI * 2);
+            editorCtx.fill();
+            editorCtx.restore();
+        }
+
+        // Load background removal library
+        async function loadBackgroundRemoval() {
+            const cdnSources = [
+                "https://unpkg.com/@imgly/background-removal@1.4.5/dist/browser.mjs",
+                "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/browser.mjs",
+                "https://esm.sh/@imgly/background-removal@1.4.5"
+            ];
+
+            for (const source of cdnSources) {
+                try {
+                    showStatus('Loading AI model...', 'info');
+                    const module = await import(source);
+                    showStatus('✅ Ready! Upload an image to begin.', 'success');
+                    return module.removeBackground;
+                } catch (error) {
+                    console.error(`Failed to load from ${source}:`, error);
+                }
+            }
+            
+            throw new Error("Could not load from any CDN source");
+        }
+
+        let removeBackground;
+
+        try {
+            removeBackground = await loadBackgroundRemoval();
+        } catch (error) {
+            showStatus('❌ Failed to load AI library. Please refresh.', 'error');
+            console.error(error);
+        }
+
+        // File upload
+        const upload = document.getElementById('upload');
+        let selectedFile;
+
+        upload.addEventListener('change', function() {
+            selectedFile = upload.files[0];
+            if (!selectedFile || !selectedFile.type.startsWith('image/')) {
+                showStatus('⚠️ Please select a valid image file', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                originalImage = new Image();
+                originalImage.onload = function() {
+                    drawImageOnCanvas(originalCanvas, originalCtx, originalImage);
+                    document.getElementById('originalPlaceholder').style.display = 'none';
+                    document.getElementById('editOriginalBtn').disabled = false;
+                    showStatus('✅ Image loaded! Click "Remove Background" to process.', 'success');
+                };
+                originalImage.src = e.target.result;
+            };
+            reader.readAsDataURL(selectedFile);
+
+            resultCanvas.classList.remove('show');
+            document.getElementById('resultPlaceholder').style.display = 'block';
+            document.getElementById('editResultBtn').disabled = true;
+            document.getElementById('downloadBtn').classList.remove('show');
+            document.getElementById('removeBtn').disabled = false;
+        });
+
+        // Remove background
+        document.getElementById('removeBtn').onclick = async function() {
+            if (!selectedFile || !removeBackground) {
+                showStatus('⚠️ Please select an image first', 'error');
+                return;
+            }
+
+            try {
+                this.textContent = "⏳ Processing...";
+                this.disabled = true;
+                showStatus('🔄 Removing background using AI...', 'info');
+                startTimer();
+
+                const config = { model: 'medium' };
+                const blob = await removeBackground(selectedFile, config);
+                stopTimer();
+
+                const url = URL.createObjectURL(blob);
+                processedImage = new Image();
+                processedImage.onload = function() {
+                    drawImageOnCanvas(resultCanvas, resultCtx, processedImage);
+                    document.getElementById('resultPlaceholder').style.display = 'none';
+                    document.getElementById('editResultBtn').disabled = false;
+                    document.getElementById('downloadBtn').classList.add('show');
+                    document.getElementById('downloadBtn').href = url;
+                    document.getElementById('downloadBtn').download = `no-bg-${selectedFile.name}`;
+                    
+                    document.getElementById('removeBtn').textContent = "🔮 Remove Background";
+                    document.getElementById('removeBtn').disabled = false;
+                    showStatus('✅ Background removed successfully!', 'success');
+                };
+                processedImage.src = url;
+
+            } catch (error) {
+                if (timerInterval) stopTimer();
+                console.error(error);
+                showStatus('❌ Error: ' + error.message, 'error');
+                this.textContent = "🔮 Remove Background";
+                this.disabled = false;
+            }
+        };
+
+        // Edit buttons
+        document.getElementById('editOriginalBtn').onclick = function() {
+            if (originalImage) initEditor(originalImage, 'original');
+        };
+
+        document.getElementById('editResultBtn').onclick = function() {
+            if (processedImage) initEditor(processedImage, 'result');
+        };
+
+        // Close editor
+        document.getElementById('closeEditor').onclick = function() {
+            document.getElementById('editorModal').classList.remove('show');
+        };
+
+        // Tool switching
+        document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentTool = this.dataset.tool;
+                
+                document.getElementById('cropOptions').style.display = currentTool === 'crop' ? 'block' : 'none';
+                document.getElementById('eraseOptions').style.display = currentTool === 'erase' ? 'block' : 'none';
+                document.getElementById('backgroundOptions').style.display = currentTool === 'background' ? 'block' : 'none';
+                
+                updateCropOverlay();
+                editorCanvas.style.cursor = currentTool === 'erase' ? 'crosshair' : 'default';
+            });
+        });
+
+        // Ratio selection
+        document.querySelectorAll('.ratio-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.ratio-option').forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+                cropRatio = this.dataset.ratio;
+                
+                if (cropRatio !== 'free') {
+                    const [w, h] = cropRatio.split(':').map(Number);
+                    const aspectRatio = w / h;
+                    cropArea.height = cropArea.width / aspectRatio;
+                    if (cropArea.height > editorCanvas.height) {
+                        cropArea.height = editorCanvas.height;
+                        cropArea.width = cropArea.height * aspectRatio;
+                    }
+                    updateCropOverlay();
+                    document.getElementById('cropWidth').value = Math.round(cropArea.width);
+                    document.getElementById('cropHeight').value = Math.round(cropArea.height);
+                }
+            });
+        });
+
+        // Crop dimension inputs
+        document.getElementById('cropWidth').addEventListener('input', function() {
+            cropArea.width = parseInt(this.value) || 1;
+            if (cropRatio !== 'free') {
+                const [w, h] = cropRatio.split(':').map(Number);
+                cropArea.height = cropArea.width * (h / w);
+                document.getElementById('cropHeight').value = Math.round(cropArea.height);
+            }
+            updateCropOverlay();
+        });
+
+        document.getElementById('cropHeight').addEventListener('input', function() {
+            cropArea.height = parseInt(this.value) || 1;
+            if (cropRatio !== 'free') {
+                const [w, h] = cropRatio.split(':').map(Number);
+                cropArea.width = cropArea.height * (w / h);
+                document.getElementById('cropWidth').value = Math.round(cropArea.width);
+            }
+            updateCropOverlay();
+        });
+
+        // Brush size
+        document.getElementById('brushSize').addEventListener('input', function() {
+            brushSize = parseInt(this.value);
+            document.getElementById('brushSizeLabel').textContent = brushSize;
+        });
+
+        // Color picker
+        document.getElementById('bgColorPicker').addEventListener('input', function() {
+            backgroundColor = this.value;
+        });
+
+        document.querySelectorAll('.color-preset').forEach(preset => {
+            preset.addEventListener('click', function() {
+                backgroundColor = this.dataset.color;
+                document.getElementById('bgColorPicker').value = backgroundColor;
+            });
+        });
+
+        // Canvas mouse events for eraser
+        editorCanvas.addEventListener('mousedown', function(e) {
+            if (currentTool === 'erase') {
+                isDrawing = true;
+                const rect = editorCanvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) * (editorCanvas.width / rect.width);
+                const y = (e.clientY - rect.top) * (editorCanvas.height / rect.height);
+                
+                // Save state for undo
+                eraseHistory.push(editorCtx.getImageData(0, 0, editorCanvas.width, editorCanvas.height));
+                if (eraseHistory.length > 20) eraseHistory.shift();
+                
+                erase(x, y);
+            }
+        });
+
+        editorCanvas.addEventListener('mousemove', function(e) {
+            if (currentTool === 'erase' && isDrawing) {
+                const rect = editorCanvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) * (editorCanvas.width / rect.width);
+                const y = (e.clientY - rect.top) * (editorCanvas.height / rect.height);
+                erase(x, y);
+            }
+        });
+
+        editorCanvas.addEventListener('mouseup', function() {
+            isDrawing = false;
+        });
+
+        editorCanvas.addEventListener('mouseleave', function() {
+            isDrawing = false;
+        });
+
+        // Undo and clear erase
+        document.getElementById('undoErase').onclick = function() {
+            if (eraseHistory.length > 0) {
+                const lastState = eraseHistory.pop();
+                editorCtx.putImageData(lastState, 0, 0);
+            }
+        };
+
+        document.getElementById('clearErase').onclick = function() {
+            if (currentEditingImage) {
+                drawImageOnCanvas(editorCanvas, editorCtx, currentEditingImage, 800, 600);
+                eraseHistory = [];
+            }
+        };
+
+        // Reset editor
+        document.getElementById('resetEditor').onclick = function() {
+            if (currentEditingImage) {
+                initEditor(currentEditingImage, currentEditingTarget);
+            }
+        };
+
+        // Apply changes
+        document.getElementById('applyEditor').onclick = function() {
+            // Apply crop if in crop mode
+            if (currentTool === 'crop') {
+                applyCrop();
+            }
+            
+            // Apply background color if in background mode
+            if (currentTool === 'background') {
+                applyBackgroundColor();
+            }
+            
+            // Create new image from editor canvas
+            const newImage = new Image();
+            newImage.onload = function() {
+                if (currentEditingTarget === 'original') {
+                    originalImage = newImage;
+                    drawImageOnCanvas(originalCanvas, originalCtx, originalImage);
+                } else {
+                    processedImage = newImage;
+                    drawImageOnCanvas(resultCanvas, resultCtx, processedImage);
+                    
+                    // Update download link
+                    resultCanvas.toBlob(function(blob) {
+                        const url = URL.createObjectURL(blob);
+                        document.getElementById('downloadBtn').href = url;
+                    });
+                }
+                
+                document.getElementById('editorModal').classList.remove('show');
+                showStatus('✅ Changes applied successfully!', 'success');
+            };
+            newImage.src = editorCanvas.toDataURL();
+        };
+
+        // Download button
+        document.getElementById('downloadBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            resultCanvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `edited-${selectedFile ? selectedFile.name : 'image.png'}`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        });
+    </script>
+</body>
+</html>
